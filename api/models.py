@@ -12,6 +12,7 @@ class Users(models.Model):
     city = models.CharField(max_length=100, null=True)
     state = models.CharField(max_length=100, null=True)
     country = models.CharField(max_length=100, null=True)
+    type_of_user = models.CharField(max_length=10, default="Author")
     
     
     
