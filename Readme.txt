@@ -14,5 +14,9 @@ Steps to run the project
 5. Run migrate
 => python manage.py migrate 
 
-6. Run server
+6. Create token
+=> python manage.py createsuperuser --username user --email user@example.com
+   python manage.py drf_create_token user
+
+7. Run server
 => python manage.py runserver
