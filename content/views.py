@@ -11,17 +11,25 @@ from .models import *
 from user.models import Users
 
 from rest_framework.permissions import IsAuthenticated
+from .common import Common
+
+common = Common()
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def contentSave(request):
-    user = Users.objects.get(id=request.data['user_id']) #Getting User Object
+    '''
+    API to save the content in database
+    '''
+    #Getting User Object
+    user = common.fetch_user_details(int(request.data['user_id']))
     if user.type_of_user == USER_ADMIN:
         # Condition for not allowing admin user to add any content
         return Response({'status':FAILURE,'data':ADMIN_USER_CANNOT_ADD_CONTENT})     
     new_content = Content.objects.create(user= user, title=request.data['title'],body= request.data['body'],
                                          summary= request.data['summary'] )
-    new_content.save() #Saving the content
+    #Saving the content
+    new_content.save() 
     serializer = ContentSerializer(new_content)
     print(request.data['categories'])
     for category in request.data['categories']:
@@ -32,8 +40,11 @@ def contentSave(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def contentView(request, user_id):
+    '''
+    API to return the contents from database
+    '''
     try:
-        user = Users.objects.get(id=int(user_id))
+        user = common.fetch_user_details(int(user_id))
         if user.type_of_user == USER_ADMIN:
             # Check if user is admin then return all the contents
             content = Content.objects.all()
@@ -48,9 +59,12 @@ def contentView(request, user_id):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def contentUpdate(request):
+    '''
+    API to update the content it takes content id and user id in request
+    '''
     try:
         content = Content.objects.get(id=int(request.data['content_id']))
-        user = Users.objects.get(id=int(request.data['user_id']))
+        user = common.fetch_user_details(int(request.data['user_id']))
         if content.user.id != request.data['user_id'] and user.type_of_user != USER_ADMIN:
             # Check for not allowing other user to edit the content
             return Response({'status':FAILURE,'data':NO_ACCESS_TO_EDIT_CONTENT}) 
@@ -68,10 +82,13 @@ def contentUpdate(request):
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def contentDelete(request):
+    '''
+    API to delete the content it takes content id and user id in request
+    '''
     try:
         content = Content.objects.get(id=int(request.data['content_id']))
         print(content)
-        user = Users.objects.get(id=int(request.data['user_id']))
+        user = common.fetch_user_details(int(request.data['user_id']))
         if content.user.id != request.data['user_id'] and user.type_of_user != USER_ADMIN:
             # Check for not allowing other user to delete the content
             return Response({'status':FAILURE,'data':NO_ACCESS_TO_DELETE_CONTENT}) 
@@ -83,6 +100,9 @@ def contentDelete(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def contentSearch(request, search_text):
+    '''
+    API to search the contents it takes search text to be searched across
+    '''
     try:
         from django.db.models import Q
         categories = Categories.objects.filter(category_name__contains = search_text)
