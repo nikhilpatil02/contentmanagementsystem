@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
 from .serializers import ContentSerializer, Categories
@@ -10,7 +10,10 @@ from api.constants import *
 from .models import *
 from user.models import Users
 
+from rest_framework.permissions import IsAuthenticated
+
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def contentSave(request):
     user = Users.objects.get(id=request.data['user_id']) #Getting User Object
     if user.type_of_user == USER_ADMIN:
@@ -27,6 +30,7 @@ def contentSave(request):
     return Response({'status':SUCCESS,'data':serializer.data})
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def contentView(request, user_id):
     try:
         user = Users.objects.get(id=int(user_id))
@@ -42,6 +46,7 @@ def contentView(request, user_id):
         return Response({'status':FAILURE,'data':NO_CONTENT_AVAILABLE}) 
     
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def contentUpdate(request):
     try:
         content = Content.objects.get(id=int(request.data['content_id']))
@@ -61,6 +66,7 @@ def contentUpdate(request):
         return Response({'status':FAILURE,'data':NO_CONTENT_AVAILABLE}) 
     
 @api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
 def contentDelete(request):
     try:
         content = Content.objects.get(id=int(request.data['content_id']))
@@ -75,6 +81,7 @@ def contentDelete(request):
         return Response({'status':FAILURE,'data':NO_CONTENT_AVAILABLE})
     
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def contentSearch(request, search_text):
     try:
         from django.db.models import Q
