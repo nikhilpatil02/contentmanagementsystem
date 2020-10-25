@@ -1,5 +1,5 @@
 
-from .constants import *
+from api.constants import *
 
 def validate_request(request):
     password = str(request.data['password'])
